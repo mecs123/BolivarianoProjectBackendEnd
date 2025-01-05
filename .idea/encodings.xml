@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/bussinessdomain/course/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/course/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/grade/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/grade/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/period/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/period/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/student/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/student/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/subject/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/subject/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/teacher/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bussinessdomain/teacher/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/api-gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/api-gateway/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/apiGateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/apiGateway/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/config-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/configserve/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/configserve/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/configserver/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/configserver/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/eurekaserver/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/eurekaserver/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/gateway/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/securityApp/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/securityApp/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/service-discovery/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/service-discovery/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/spring-cloud-config-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/spring-cloud-config-server/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/spring-cloud-gateway-keycloak/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/spring-cloud-gateway-keycloak/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/springbootadmin/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/springbootadmin/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/infraestructuradomain/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/usuario/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/usuario/src/main/resources" charset="UTF-8" />
+  </component>
+</project>
