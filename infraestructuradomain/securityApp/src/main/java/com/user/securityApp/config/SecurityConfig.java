@@ -20,9 +20,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+
+import java.util.List;
 
 
 @Configuration
@@ -33,33 +37,91 @@ public class SecurityConfig {
     @Autowired
     private JwtUtils jwtUtils;
 
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(http -> {
-
-                    // Configurar los endpoints públicos
-                    http.requestMatchers(
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+                // Configurar autorización de rutas
+                .authorizeRequests(authorize -> {
+                    // Endpoints públicos
+                    authorize.requestMatchers(HttpMethod.DELETE,"/auth/delete").permitAll();
+                    authorize.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll();
+                    authorize.requestMatchers(
                             "/auth/sign-up",
                             "/auth/log-in",
                             "/auth/all",
+                            "/auth/edit",
+                            "/auth/delete",
+                            "/auth/byId",
+                            "/auth/roles",
                             "/actuator/**"
                     ).permitAll();
+                    authorize.requestMatchers(
+                            new AntPathRequestMatcher("/swagger-ui/**"),
+                            new AntPathRequestMatcher("/v3/api-docs/**")
+                    ).permitAll();
 
-                    // Configurar los endpoints privados
-                    http.requestMatchers(HttpMethod.POST, "/method/post").hasAnyRole("ADMIN", "DEVELOPER");
-                    http.requestMatchers(HttpMethod.PATCH, "/method/patch").hasAnyAuthority("REFACTOR");
+                    authorize.requestMatchers(HttpMethod.POST, "/method/post").hasAnyRole("ADMIN", "DEVELOPER");
+                    authorize.requestMatchers(HttpMethod.PATCH, "/method/patch").hasAnyAuthority("REFACTOR");
 
-                    // Configurar el resto de endpoints no especificados
-                    http.anyRequest().denyAll();
+                    // Permitir solicitudes locales (para pruebas en localhost)
+                    authorize.requestMatchers(request -> {
+                        String remoteHost = request.getRemoteHost();
+                        return "localhost".equals(remoteHost) ||
+                                "127.0.0.1".equals(remoteHost) ||
+                                "0:0:0:0:0:0:0:1".equals(remoteHost);
+                    }).permitAll();
+
+                    // Bloquear cualquier solicitud no configurada
+                    authorize.anyRequest().denyAll();
                 })
 
-                .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class) // Añadir filtro de validación de JWT
+                // Configurar CORS para Angular
+                .cors(Customizer.withDefaults())
+
+                // Configurar CSRF con soporte para Angular
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers(
+                                new AntPathRequestMatcher("/swagger-ui/**"),
+                                new AntPathRequestMatcher("/v3/api-docs/**"),
+                                request -> {
+                                    String remoteHost = request.getRemoteHost();
+                                    return "localhost".equals(remoteHost) ||
+                                            "127.0.0.1".equals(remoteHost) ||
+                                            "0:0:0:0:0:0:0:1".equals(remoteHost);
+                                }
+                        )
+                )
+
+                // Configurar manejo de sesiones
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Agregar filtro de validación JWT
+                .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
+
                 .build();
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Dominio del frontend
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-XSRF-TOKEN"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+
+
+
+
+
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {

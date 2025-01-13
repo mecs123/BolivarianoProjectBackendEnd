@@ -3,8 +3,10 @@ package com.user.securityApp.service;
 
 
 import com.user.securityApp.controller.dto.*;
+import com.user.securityApp.persistence.entity.PermissionEntity;
 import com.user.securityApp.persistence.entity.RoleEntity;
 import com.user.securityApp.persistence.entity.UserEntity;
+import com.user.securityApp.persistence.repository.PermisionRepository;
 import com.user.securityApp.persistence.repository.RoleRepository;
 import com.user.securityApp.persistence.repository.UserRepository;
 import com.user.securityApp.util.JwtUtils;
@@ -21,12 +23,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +41,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    private PermisionRepository permisionRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -176,8 +176,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
         return users.stream()
                 .map(user -> new UserListResponse(
+                        user.getId(),
                         user.getUsername(),
-                        user.getPassword(),
                         user.getFullName(),
                         user.getDateOfBirth(),
                         user.getEmail(),
@@ -194,5 +194,123 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     }
 
+    public UserRolePermissionDTO updateUser(AuthUpdateUserRequest createRoleRequest, Long id) {
+
+        // Buscar el usuario existente
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario con ID " + id + " no encontrado"));
+
+        // Validar los roles proporcionados en la solicitud
+        if (createRoleRequest.roleRequest() == null) {
+            throw new IllegalArgumentException("Role request is required");
+        }
+
+        List<String> rolesRequest = createRoleRequest.roleRequest().roleListName();
+
+        // Obtener roles desde la base de datos que coinciden con la lista de roles proporcionada
+        Set<RoleEntity> roleEntityList = roleRepository.findRoleEntitiesByRoleEnumIn(rolesRequest)
+                .stream().collect(Collectors.toSet());
+
+        if (roleEntityList.isEmpty()) {
+            throw new IllegalArgumentException("The roles specified do not exist.");
+        }
+
+        // Actualizar los valores del usuario
+        user.setUsername(createRoleRequest.username());
+        user.setFullName(createRoleRequest.fullName());
+        user.setEmail(createRoleRequest.email());
+        user.setDateOfBirth(createRoleRequest.dateOfBirth());
+        user.setPhone(createRoleRequest.phone());
+        user.setEnabled(createRoleRequest.isEnabled());
+        user.setAccountNoLocked(createRoleRequest.accountNoLocked());
+        user.setAccountNoExpired(createRoleRequest.accountNoExpired());
+        user.setCredentialNoExpired(createRoleRequest.credentialNoExpired());
+        user.setRoles(roleEntityList); // Asignamos los roles a la entidad
+
+        // Guardar el usuario actualizado
+        UserEntity userSaved = userRepository.save(user);
+
+        // Generar lista de autoridades (roles y permisos)
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+        userSaved.getRoles().forEach(
+                role -> authorities.add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
+        userSaved.getRoles().stream()
+                .flatMap(role -> role.getPermissionList().stream()) // Extraemos permisos asociados
+                .forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getName())));
+
+        // Crear la respuesta con los roles y permisos actualizados
+        Set<String> roleNames = userSaved.getRoles().stream()
+                .map(role -> role.getRoleEnum().name().replace("ROLE_", "")) // Eliminar prefijo "ROLE_"
+                .collect(Collectors.toSet());
+
+
+
+        // Devolver DTO con la información actualizada
+        return new UserRolePermissionDTO(
+                id,
+                userSaved.getUsername(),
+                user.getFullName(),
+                user.getEmail(),
+                userSaved.getDateOfBirth(),
+                user.getPhone(),
+                userSaved.isEnabled(),
+                userSaved.isAccountNoExpired(),
+                userSaved.isAccountNoLocked(),
+                roleNames
+        );
+    }
+
+
+    public boolean deleteUser(Long id) {
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(()-> new UsernameNotFoundException("Usuario con el "+id+" No existe"));
+
+        userEntity.getRoles().forEach(role->{
+            role.getPermissionList().clear();
+            roleRepository.save(role);
+        });
+        userEntity.getRoles().clear();
+        userRepository.save(userEntity);
+
+        userRepository.delete(userEntity);
+
+        return true;
+    }
+
+    public UserListResponse listUserById(Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario con el id " + id + " no existe"));
+
+        return new UserListResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getFullName(),
+                        user.getDateOfBirth(),
+                        user.getEmail(),
+                        user.getPhone(),
+                        user.isEnabled(),
+                        user.isAccountNoExpired(),
+                        user.isAccountNoLocked(),
+                        user.isCredentialNoExpired(), // Agregado aquí
+                        user.getRoles().stream()
+                                .map(role -> role.getRoleEnum().name().replace("ROLE_", "")) // Obtener solo el nombre del rol, sin el prefijo "ROLE_"
+                                .collect(Collectors.toList()) // Cambiar a List<String> en lugar de Set<AuthRoleResponse>
+        );
+
+    }
+
+
+    public List<RoleDTO> listAllRoles() {
+        // Asegúrate de que la consulta en el repositorio sea correcta.
+        List<RoleEntity> roles = (List<RoleEntity>) roleRepository.findAll();
+
+        // Mapeamos los RoleEntity a RoleDTO y los recolectamos en una lista.
+        return roles.stream()
+                .map(roleEntity -> new RoleDTO(
+                        roleEntity.getId(),
+                        roleEntity.getRoleEnum()  // Suponiendo que RoleDTO tiene estos dos campos.
+                ))
+                .collect(Collectors.toList());
+    }
 
 }

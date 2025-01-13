@@ -6,8 +6,9 @@ import java.util.Date;
 import java.util.List;
 
 @JsonPropertyOrder(
-        {"username",
-                "password" ,
+        {
+                "id",
+                "username",
                 "fullName" ,
                 "email",
                 "dateOfBirth",
@@ -17,8 +18,8 @@ import java.util.List;
                 "accountNoLocked",
                 "roles"})
 public record UserListResponse(
+        Long id,
         String username,
-        String password,
         String fullName,
         Date dateOfBirth,
         String email,

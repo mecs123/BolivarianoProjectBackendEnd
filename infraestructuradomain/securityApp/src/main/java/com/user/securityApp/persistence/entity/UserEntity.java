@@ -1,5 +1,6 @@
 package com.user.securityApp.persistence.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -24,6 +25,7 @@ public class UserEntity {
     @Column(unique = true)
     private String username;
 
+    @JsonIgnore
     private String password;
 
     private  String fullName;

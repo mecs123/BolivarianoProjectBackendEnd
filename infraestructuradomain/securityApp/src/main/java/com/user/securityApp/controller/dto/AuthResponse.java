@@ -9,6 +9,7 @@
                                String message,
                                String token,
                                Set<String> roles,
-                               boolean status) {
+                               boolean status
+    ) {
 
     }

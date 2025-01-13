@@ -1,9 +1,6 @@
 package com.user.securityApp.controller;
 
-import com.user.securityApp.controller.dto.AuhthLoginRequest;
-import com.user.securityApp.controller.dto.AuthCreateUserRequest;
-import com.user.securityApp.controller.dto.AuthResponse;
-import com.user.securityApp.controller.dto.UserListResponse;
+import com.user.securityApp.controller.dto.*;
 import com.user.securityApp.service.UserDetailServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +33,39 @@ public class AuthenticationController {
     @GetMapping("/all")
     public ResponseEntity<List<UserListResponse>> allUser(){
         return new ResponseEntity<>(this.userDetailsService.listAllUsers(), HttpStatus.OK);
+    }
+
+    @PutMapping("/edit/{id}")
+    public ResponseEntity<UserRolePermissionDTO> update(
+            @PathVariable ("id") Long id,
+            @RequestBody @Valid AuthUpdateUserRequest userRequest
+    ) throws RoleNotFoundException {
+        return new ResponseEntity<>(this.userDetailsService.updateUser(userRequest,id), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable ("id") Long id
+    ) throws RoleNotFoundException {
+
+        if (userDetailsService.deleteUser(id)){
+              return ResponseEntity.ok().build();
+        }else {
+            return  ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/byId/{id}")
+    public ResponseEntity<UserListResponse> allUserById(
+            @PathVariable("id") Long id
+    ){
+        return new ResponseEntity<>(this.userDetailsService.listUserById(id), HttpStatus.OK);
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<List<RoleDTO>> allRoles(
+    ){
+        return new ResponseEntity<>(this.userDetailsService.listAllRoles(), HttpStatus.OK);
     }
 
 
