@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @ComponentScan({"com.bolivariano.teacher"})
 @RestController
 @RequestMapping("/teacher")
-@RequiredArgsConstructor
 public class TeacherRestController implements TeacherSwaggerConfig {
 
     @Autowired

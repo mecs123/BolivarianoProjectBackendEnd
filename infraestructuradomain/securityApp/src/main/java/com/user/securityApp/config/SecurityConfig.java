@@ -65,6 +65,8 @@ public class SecurityConfig {
                     ).permitAll();
 
                     authorize.requestMatchers(HttpMethod.POST, "/method/post").hasAnyRole("ADMIN", "DEVELOPER");
+                    authorize.requestMatchers(HttpMethod.GET, "/teacher/all").hasAnyRole("ADMIN", "DEVELOPER");
+
                     authorize.requestMatchers(HttpMethod.PATCH, "/method/patch").hasAnyAuthority("REFACTOR");
 
                     // Permitir solicitudes locales (para pruebas en localhost)

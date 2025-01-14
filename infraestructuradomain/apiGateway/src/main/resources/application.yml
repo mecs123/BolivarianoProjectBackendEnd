@@ -1,27 +1,24 @@
+
+
+
 spring:
   cloud:
     gateway:
       routes:
-        - id: securityApp
-          uri: lb://securityApp
-          predicates:
-            - Path=/auth/**
-          filters:
-            - name: CORS
-              args:
-                allowedOrigins: 'http://localhost:4200'
-                allowedMethods: 'GET,POST'
-                allowedHeaders: '*'
-                allowCredentials: 'true'
-            - AuthFilter
-        - id: teacher-assign-service
-          uri: lb://teacher-service
+        - id: teacher-service
+          uri: lb://TEACHER-SERVICE
           predicates:
             - Path=/teacher-assign/**
+          filters:
+            - AuthFilter
+
         - id: teacher-service
-          uri: lb://teacher-service
+          uri: lb://TEACHER-SERVICE
           predicates:
             - Path=/teacher/**
+          filters:
+            - AuthFilter
+
         - id: courses-service
           uri: lb://courses-service
           predicates:
@@ -30,3 +27,10 @@ spring:
           uri: lb://subject-service
           predicates:
             - Path=/subject/**
+
+        - id: securityApp
+          uri: lb://SECURITYAPP
+          predicates:
+            - Path=/auth/**
+          filters:
+            - AuthFilter

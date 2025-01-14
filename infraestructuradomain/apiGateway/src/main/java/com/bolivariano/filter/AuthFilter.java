@@ -6,18 +6,23 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> {
+
     @Autowired
-    private Validator validator;
+    Validator validator;
     @Autowired
-    private JwtUtils jwtService;
+    JwtService jwtService;
 
     public AuthFilter(){
         super(Config.class);
     }
 
+
+    /**
+     * @param config
+     * @return
+     */
     @Override
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
@@ -41,5 +46,4 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     }
 
     public static class Config{}
-
 }
