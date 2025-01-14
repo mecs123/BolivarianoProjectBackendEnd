@@ -1,24 +1,21 @@
 package com.bolivariano.filter;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.security.Key;
 
-@Component
-public class JwtUtils {
+@Service
+public class JwtService {
 
     @Value("${security.jwt.key.private}")
     private String privateKey;
@@ -26,6 +23,20 @@ public class JwtUtils {
     @Value("${security.jwt.user.generator}")
     private String userGenerator;
 
+    public static final String SECRET ="1231231312313131313131313131313131313131313123424242424242342242";
+
+    public void validateTokenEasy(String token){
+        Jwts.parser()
+
+                .setSigningKey(getSignKey())
+                .parseClaimsJws(token);
+
+    }
+
+    private Key getSignKey(){
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
     // Método para validar el token JWT
     public DecodedJWT validateToken(String token) {
@@ -41,10 +52,14 @@ public class JwtUtils {
             // Verifica el token y devuelve el token decodificado si es válido
             DecodedJWT decodedJWT = verifier.verify(token);
             return decodedJWT;
+
         } catch (JWTVerificationException exception) {
             // Si el token no es válido, lanza una excepción con un mensaje
             throw new JWTVerificationException("Token no es valido, No autorizado");
         }
     }
+
+
+
 
 }

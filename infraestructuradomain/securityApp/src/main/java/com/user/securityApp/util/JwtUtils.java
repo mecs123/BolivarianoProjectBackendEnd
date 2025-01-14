@@ -12,9 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -26,13 +24,18 @@ public class JwtUtils {
     @Value("${security.jwt.user.generator}")
     private String userGenerator;
 
+
+    @Value("${security.jwt.key.private.expiration}")
+    private long jwtExpiration;
+
+    @Value("${security.jwt.user.refresh-token.expiration}")
+    private  long refreshExpiration;
+
     // Método para crear un JWT basado en la autenticación del usuario
     public String createToken(Authentication authentication, String username) {
-
         // Crear el algoritmo HMAC256 usando la clave privada para firmar el token
         Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
-        Authentication authentication2 = SecurityContextHolder.getContext().getAuthentication();
-
+        Authentication getUserNameAuthenticaPrincipal = SecurityContextHolder.getContext().getAuthentication();
         // Obtener las autoridades (roles/permisos) del usuario y convertirlas a una cadena separada por comas
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority) // Extrae el nombre de cada autoridad
@@ -41,10 +44,10 @@ public class JwtUtils {
         // Crear el token JWT con varios parámetros
         String jwtToken = JWT.create()
                 .withIssuer(this.userGenerator) // Establece el emisor (usualmente el nombre del servicio o la aplicación)
-                .withSubject(username)          // El sujeto es el nombre de usuario
+                .withSubject(getUserNameAuthenticaPrincipal.getPrincipal().toString())          // El sujeto es el nombre de usuario
                 .withClaim("authorities", authorities) // Agrega el claim "authorities" con los roles
                 .withIssuedAt(new Date())      // Establece la fecha y hora de emisión del token
-                .withExpiresAt(new Date(System.currentTimeMillis() + 1800000)) // Establece la fecha de expiración (30 minutos)
+                .withExpiresAt(new Date(System.currentTimeMillis() + this.jwtExpiration)) // Establece la fecha de expiración (30 minutos)
                 .withJWTId(UUID.randomUUID().toString()) // Establece un ID único para el JWT
                 .withNotBefore(new Date(System.currentTimeMillis())) // Establece la fecha de inicio de validez (en este caso es inmediatamente)
                 .sign(algorithm);  // Firma el token con el algoritmo HMAC256 usando la clave privada
@@ -73,6 +76,21 @@ public class JwtUtils {
         }
     }
 
+    // Método para generar un Refresh Token
+    public String generateRefreshToken(String username) {
+        Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
+
+        String refreshToken = JWT.create()
+                .withIssuer(this.userGenerator)  // Emisor del token
+                .withSubject(username)           // Usuario asociado
+                .withIssuedAt(new Date())        // Fecha de emisión
+                .withExpiresAt(new Date(System.currentTimeMillis() + refreshExpiration)) // Expiración
+                .withJWTId(UUID.randomUUID().toString())  // ID único del token
+                .sign(algorithm);               // Firma del token
+
+        return refreshToken;
+    }
+
     // Método para extraer el nombre de usuario desde el token decodificado
     public String extractUsername(DecodedJWT decodedJWT) {
         return decodedJWT.getSubject().toString();  // El nombre de usuario es el "subject" del token
@@ -87,6 +105,5 @@ public class JwtUtils {
     public Map<String, Claim> returnAllClain(DecodedJWT decodedJWT) {
         return decodedJWT.getClaims();  // Devuelve todos los claims del token
     }
-
 
 }

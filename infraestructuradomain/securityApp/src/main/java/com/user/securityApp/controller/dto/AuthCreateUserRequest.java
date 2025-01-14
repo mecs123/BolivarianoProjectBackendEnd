@@ -15,18 +15,10 @@ public record AuthCreateUserRequest(
 
         @NotBlank(message = "Password cannot be empty")
         String password,
-
         String email,
-
-
         String fullName,
-
-
         Date dateOfBirth,
-
-
         String phone,
-
 
         boolean isEnabled,
 

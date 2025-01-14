@@ -45,8 +45,12 @@ public class SecurityConfig {
                     // Endpoints públicos
                     authorize.requestMatchers(HttpMethod.DELETE,"/auth/delete").permitAll();
                     authorize.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll();
+
+                    authorize.requestMatchers(HttpMethod.POST,"/auth").permitAll();
+
                     authorize.requestMatchers(
                             "/auth/sign-up",
+                            "auth/refresh",
                             "/auth/log-in",
                             "/auth/all",
                             "/auth/edit",
@@ -61,6 +65,8 @@ public class SecurityConfig {
                     ).permitAll();
 
                     authorize.requestMatchers(HttpMethod.POST, "/method/post").hasAnyRole("ADMIN", "DEVELOPER");
+                    authorize.requestMatchers(HttpMethod.GET, "/teacher/all").hasAnyRole("ADMIN", "DEVELOPER");
+
                     authorize.requestMatchers(HttpMethod.PATCH, "/method/patch").hasAnyAuthority("REFACTOR");
 
                     // Permitir solicitudes locales (para pruebas en localhost)
