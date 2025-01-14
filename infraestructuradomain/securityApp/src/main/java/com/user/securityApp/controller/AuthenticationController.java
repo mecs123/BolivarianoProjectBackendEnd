@@ -30,6 +30,13 @@ public class AuthenticationController {
         return  new ResponseEntity<>(this.userDetailsService.loginUser(userRequest), HttpStatus.OK);
     }
 
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestHeader("Refresh-Token") String refreshToken) {
+
+        return new ResponseEntity<>(this.userDetailsService.refreshToken1(refreshToken),HttpStatus.OK);
+    }
+
     @GetMapping("/all")
     public ResponseEntity<List<UserListResponse>> allUser(){
         return new ResponseEntity<>(this.userDetailsService.listAllUsers(), HttpStatus.OK);

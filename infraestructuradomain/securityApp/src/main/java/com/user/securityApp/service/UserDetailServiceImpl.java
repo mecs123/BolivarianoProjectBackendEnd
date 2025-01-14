@@ -2,8 +2,9 @@ package com.user.securityApp.service;
 
 
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.user.securityApp.consts.MessageConstants;
 import com.user.securityApp.controller.dto.*;
-import com.user.securityApp.persistence.entity.PermissionEntity;
 import com.user.securityApp.persistence.entity.RoleEntity;
 import com.user.securityApp.persistence.entity.UserEntity;
 import com.user.securityApp.persistence.repository.PermisionRepository;
@@ -11,6 +12,7 @@ import com.user.securityApp.persistence.repository.RoleRepository;
 import com.user.securityApp.persistence.repository.UserRepository;
 import com.user.securityApp.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -79,6 +81,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
         //Crear el token
         String accesToken = jwtUtils.createToken(authentication, username);
 
+
+
         // Extraer roles del usuario desde las autoridades
         Set<String> roles = authentication.getAuthorities()
                 .stream()
@@ -87,10 +91,13 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 .map(authority -> authority.replace("ROLE_", ""))  // Eliminar el prefijo "ROLE_"
                 .collect(Collectors.toSet());  // Convertir a una lista de strings
 
+
+        String refreshToken = jwtUtils.generateRefreshToken(username);
         AuthResponse authResponse = new AuthResponse(
                 username,
                 "User logged succesfully", 
                 accesToken,
+                refreshToken,
                 roles,
                 true);
         
@@ -108,27 +115,40 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (!passwordEncoder.matches(password,userDetails.getPassword())){
             throw  new BadCredentialsException("Invalid Password");
         }
-
         return new UsernamePasswordAuthenticationToken(username,userDetails.getPassword(), userDetails.getAuthorities());
     }
 
-    public AuthResponse createUser(AuthCreateUserRequest createRoleRequest) {
 
+    public AuthResponse createUser(AuthCreateUserRequest createRoleRequest) {
+        String message = null;
         String username = createRoleRequest.username();
         String password = createRoleRequest.password();
 
+        // Verificar si el nombre de usuario ya existe en la base de datos
+        Optional<UserEntity> existingUser = userRepository.findUserEntityByUsername(username);
+        if (existingUser.isPresent()) {
+            message = MessageConstants.USER_ALREADY_EXIST;// Mensaje de error para el nombre de usuario duplicado
+            throw new IllegalArgumentException(message); // Lanza un error con el mensaje
+        }
+
+        // Verificar si los roles son requeridos
         if (createRoleRequest.roleRequest() == null) {
-            throw new IllegalArgumentException("Role request is required");
+            message = MessageConstants.ROLE_REQUEST_REQUIRED; // Usamos la constante
+            throw new IllegalArgumentException(message);
         }
 
         List<String> rolesRequest = createRoleRequest.roleRequest().roleListName();
 
-        Set<RoleEntity> roleEntityList = roleRepository.findRoleEntitiesByRoleEnumIn(rolesRequest).stream().collect(Collectors.toSet());
+        // Buscar roles en la base de datos
+        Set<RoleEntity> roleEntityList = roleRepository.findRoleEntitiesByRoleEnumIn(rolesRequest).stream()
+                .collect(Collectors.toSet());
 
         if (roleEntityList.isEmpty()) {
-            throw new IllegalArgumentException("The roles specified does not exist.");
+            message = MessageConstants.ROLE_NOT_FOUND; // Usamos la constante
+            throw new IllegalArgumentException(message);
         }
 
+        // Crear el objeto UserEntity
         UserEntity userEntity = UserEntity.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
@@ -143,29 +163,37 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 .roles(roleEntityList)
                 .build();
 
+        // Guardar el usuario en la base de datos
         UserEntity userSaved = userRepository.save(userEntity);
 
+        // Asignar roles y permisos al usuario
         ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
-
         userSaved.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
+        userSaved.getRoles().stream().flatMap(role -> role.getPermissionList().stream())
+                .forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getName())));
 
-        userSaved.getRoles().stream().flatMap(role -> role.getPermissionList().stream()).forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getName())));
-
+        // Crear la autenticación
         Authentication authentication = new UsernamePasswordAuthenticationToken(userSaved, null, authorities);
 
+        // Crear el access token y refresh token
         String accessToken = jwtUtils.createToken(authentication, username);
+        String refreshToken = jwtUtils.generateRefreshToken(username);
 
-        // Modificar aquí: devolver los roles como lista de strings en lugar de AuthRoleResponse
+        // Crear el set de roles
         Set<String> roleNames = userSaved.getRoles().stream()
-                .map(role -> role.getRoleEnum().name().replace("ROLE_", ""))  // Eliminar prefijo "ROLE_"
+                .map(role -> role.getRoleEnum().name().replace("ROLE_", "")) // Eliminar prefijo "ROLE_"
                 .collect(Collectors.toSet());
 
-        // Crear la respuesta con la lista de roles como String
+        // Establecer el mensaje de éxito
+        message = MessageConstants.USER_CREATED; // Usamos la constante para el mensaje de éxito
+
+        // Crear y devolver la respuesta
         AuthResponse authResponse = new AuthResponse(
                 username,
-                "User created successfully",
+                message,
                 accessToken,
-                roleNames,  // Pasar la lista de roles en lugar de AuthRoleResponse
+                refreshToken,
+                roleNames,  // Pasar la lista de roles como String
                 true
         );
         return authResponse;
@@ -312,5 +340,28 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public Object refreshToken1(String refreshToken) {
+
+        try {
+            // Validar el refresh token
+            DecodedJWT decodedJWT = jwtUtils.validateToken(refreshToken);
+            String username = decodedJWT.getSubject();
+
+            if (username != null){
+                // Generar un nuevo Access Token
+                String newAccessToken = jwtUtils.generateRefreshToken(username);  // Puedes ajustar 'null' según tu lógica de roles
+
+                return ResponseEntity.ok().body(newAccessToken);
+            }else {
+                return ResponseEntity.status(400).body("usuario no valido.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(403).body("Refresh token inválido o expirado.");
+        }
+    }
+
+
+
 
 }

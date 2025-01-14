@@ -45,8 +45,12 @@ public class SecurityConfig {
                     // Endpoints públicos
                     authorize.requestMatchers(HttpMethod.DELETE,"/auth/delete").permitAll();
                     authorize.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll();
+
+                    authorize.requestMatchers(HttpMethod.POST,"/auth").permitAll();
+
                     authorize.requestMatchers(
                             "/auth/sign-up",
+                            "auth/refresh",
                             "/auth/log-in",
                             "/auth/all",
                             "/auth/edit",
