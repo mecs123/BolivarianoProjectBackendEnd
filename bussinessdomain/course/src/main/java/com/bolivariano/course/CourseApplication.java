@@ -10,6 +10,8 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+
 @EnableDiscoveryClient
 @SpringBootApplication
 public class CourseApplication {
@@ -23,21 +25,45 @@ public class CourseApplication {
 	@Bean
 	public CommandLineRunner loadCourseData(CourseRepository repository) {
 		return (args) -> {
-// Inserta datos predeterminados al arrancar la aplicación
-			repository.save(new Course(null, "Primero"));
-			repository.save(new Course(null, "Segundo"));
-			repository.save(new Course(null, "Tercero"));
-			repository.save(new Course(null, "Cuarto"));
-			repository.save(new Course(null, "Quinto"));
-			repository.save(new Course(null, "Sexto"));
-			repository.save(new Course(null, "Séptimo"));
-			repository.save(new Course(null, "Octavo"));
-			repository.save(new Course(null, "Noveno"));
-			repository.save(new Course(null, "Décimo"));
-			repository.save(new Course(null, "Once"));
+			Course courso1 = Course.builder()
+					.nameCourse("Primero")
+					.build();
+			Course courso2 = Course.builder()
+					.nameCourse("Segundo")
+					.build();
+			Course courso3 = Course.builder()
+					.nameCourse("Tercero")
+					.build();
+			Course courso4 = Course.builder()
+					.nameCourse("Cuarto")
+					.build();
+			Course courso5 = Course.builder()
+					.nameCourse("Quinto")
+					.build();
+			Course courso6 = Course.builder()
+					.nameCourse("Sexto")
+					.build();
+			Course courso7 = Course.builder()
+					.nameCourse("Séptimo")
+					.build();
+			Course courso8 = Course.builder()
+					.nameCourse("Octavo")
+					.build();
+			Course courso9 = Course.builder()
+					.nameCourse("Noveno")
+					.build();
+			Course courso10 = Course.builder()
+					.nameCourse("Décimo")
+					.build();
+			Course courso11 = Course.builder()
+					.nameCourse("Once")
+					.build();
 
+			// Guarda todos los cursos en la base de datos
+			repository.saveAll(List.of(courso1, courso2, courso3, courso4, courso5, courso6, courso7, courso8, courso9, courso10, courso11));
 		};
 	}
+
 
 	@Bean
 	@LoadBalanced

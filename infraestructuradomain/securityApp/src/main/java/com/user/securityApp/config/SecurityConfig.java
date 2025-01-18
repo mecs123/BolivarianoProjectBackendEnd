@@ -56,6 +56,7 @@ public class SecurityConfig {
                             "/auth/edit",
                             "/auth/delete",
                             "/auth/byId",
+                            "/auth/email",
                             "/auth/roles",
                             "/actuator/**"
                     ).permitAll();

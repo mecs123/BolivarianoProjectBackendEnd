@@ -33,7 +33,6 @@ public class AuthenticationController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestHeader("Refresh-Token") String refreshToken) {
-
         return new ResponseEntity<>(this.userDetailsService.refreshToken1(refreshToken),HttpStatus.OK);
     }
 
@@ -45,16 +44,12 @@ public class AuthenticationController {
     @PutMapping("/edit/{id}")
     public ResponseEntity<UserRolePermissionDTO> update(
             @PathVariable ("id") Long id,
-            @RequestBody @Valid AuthUpdateUserRequest userRequest
-    ) throws RoleNotFoundException {
+            @RequestBody @Valid AuthUpdateUserRequest userRequest)  {
         return new ResponseEntity<>(this.userDetailsService.updateUser(userRequest,id), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable ("id") Long id
-    ) throws RoleNotFoundException {
-
+    public ResponseEntity<Void> delete(@PathVariable ("id") Long id)  {
         if (userDetailsService.deleteUser(id)){
               return ResponseEntity.ok().build();
         }else {
@@ -63,17 +58,21 @@ public class AuthenticationController {
     }
 
     @GetMapping("/byId/{id}")
-    public ResponseEntity<UserListResponse> allUserById(
-            @PathVariable("id") Long id
-    ){
+    public ResponseEntity<UserListResponse> allUserById(@PathVariable("id") Long id){
         return new ResponseEntity<>(this.userDetailsService.listUserById(id), HttpStatus.OK);
     }
 
     @GetMapping("/roles")
-    public ResponseEntity<List<RoleDTO>> allRoles(
-    ){
+    public ResponseEntity<List<RoleDTO>> allRoles(){
         return new ResponseEntity<>(this.userDetailsService.listAllRoles(), HttpStatus.OK);
     }
+
+    @GetMapping("/email")
+    public ResponseEntity<AuthEmailResponse> getEmail(@RequestParam ("email") String email) {
+        AuthEmailResponse exists = this.userDetailsService.obtainEmail(email);
+        return new ResponseEntity<>(exists, HttpStatus.OK);
+    }
+
 
 
 

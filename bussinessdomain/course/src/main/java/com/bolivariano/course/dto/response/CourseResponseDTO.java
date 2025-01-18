@@ -13,10 +13,14 @@ public class CourseResponseDTO {
     private String nameCourse;
 
 
+
+
     public static CourseResponseDTO fromEntity(Course course) {
         CourseResponseDTO dto = new CourseResponseDTO();
         dto.setId(course.getId());
         dto.setNameCourse(course.getNameCourse());
         return dto;
     }
+
+
 }

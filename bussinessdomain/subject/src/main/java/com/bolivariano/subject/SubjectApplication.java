@@ -10,6 +10,8 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+
 @EnableDiscoveryClient
 @SpringBootApplication
 public class SubjectApplication {
@@ -20,19 +22,20 @@ public class SubjectApplication {
 	@Bean
 	public CommandLineRunner loadData(SubjectRepository repository) {
 		return (args) -> {
-			// Inserta datos predeterminados al arrancar la aplicación
-			repository.save(new SubjectCollege(null, "Matemáticas"));
-			repository.save(new SubjectCollege(null, "Español"));
-			repository.save(new SubjectCollege(null, "Ciencias Naturales"));
-			repository.save(new SubjectCollege(null, "Ciencias Sociales"));
-			repository.save(new SubjectCollege(null, "Inglés"));
-			repository.save(new SubjectCollege(null, "Ética"));
-			repository.save(new SubjectCollege(null, "Educación Física"));
-			repository.save(new SubjectCollege(null, "Arte"));
-			repository.save(new SubjectCollege(null, "Tecnología e Informática"));
-
+			repository.saveAll(List.of(
+					new SubjectCollege(null, "Matemáticas"),
+					new SubjectCollege(null, "Español"),
+					new SubjectCollege(null, "Ciencias Naturales"),
+					new SubjectCollege(null, "Ciencias Sociales"),
+					new SubjectCollege(null, "Inglés"),
+					new SubjectCollege(null, "Ética"),
+					new SubjectCollege(null, "Educación Física"),
+					new SubjectCollege(null, "Arte"),
+					new SubjectCollege(null, "Tecnología e Informática")
+			));
 		};
 	}
+
 
 	@Bean
 	@LoadBalanced

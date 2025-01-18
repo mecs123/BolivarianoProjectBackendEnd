@@ -1,5 +1,6 @@
 package com.bolivariano.course.service.impl;
 
+import com.bolivariano.course.dto.response.CourseResponseDTO;
 import com.bolivariano.course.entities.Course;
 import com.bolivariano.course.repository.CourseRepository;
 import com.bolivariano.course.service.CourseService;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -18,8 +20,13 @@ public class CourseServiceImpl implements CourseService {
     /**
      * @return
      */
-    public List<Course> findAllCourses() {
-        return courseRepository.findAll();
+    public List<CourseResponseDTO> findAllCourses() {
+        List<Course> courses = courseRepository.findAll();
+       return courses.stream().map(
+               course -> new CourseResponseDTO(
+                       course.getId(),
+                       course.getNameCourse())
+       ).collect(Collectors.toList());
     }
 
     /**
