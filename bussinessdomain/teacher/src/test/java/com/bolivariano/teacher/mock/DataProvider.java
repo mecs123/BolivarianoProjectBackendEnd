@@ -69,7 +69,7 @@ public class DataProvider {
                 .codTeacher("T001")
                 .nameTeacher("Manuel")
                 .estado(true)
-                .teacherSubjectRequestDto(Collections.emptySet())
+                .teacherSubjectResponseDto(Collections.emptySet())
                 .teacherCourseResponseDto(Collections.emptySet())
                 .build();
         return responseDTO;
@@ -94,7 +94,7 @@ public class DataProvider {
                 .codTeacher("T001")
                 .nameTeacher("Manuel")
                 .estado(true)
-                .teacherSubjectRequestDto(Collections.emptySet())
+                .teacherSubjectResponseDto(Collections.emptySet())
                 .teacherCourseResponseDto(Collections.emptySet())
                 .build();
     }
