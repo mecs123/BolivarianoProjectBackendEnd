@@ -29,7 +29,7 @@ public interface TeacherResponseMapper {
 
     @Mappings({
             @Mapping(source = "id", target = "id"),
-            @Mapping(source = "listSubjectByTeacher", target = "teacherSubjectRequestDto"),
+            @Mapping(source = "listSubjectByTeacher", target = "teacherSubjectResponseDto"),
             @Mapping(source = "teacherCourseList", target = "teacherCourseResponseDto"),
     })
     TeacherResponseDTO teacherToResponseDto(Teacher teacher);
@@ -44,13 +44,13 @@ public interface TeacherResponseMapper {
 
     @Mappings({
             @Mapping(source = "teacher.id", target = "id"),
-            @Mapping(source = "teacher.listSubjectByTeacher", target = "teacherSubjectRequestDto"),
+            @Mapping(source = "teacher.listSubjectByTeacher", target = "teacherSubjectResponseDto"),
             @Mapping(source = "teacher.teacherCourseList", target = "teacherCourseResponseDto")
     })
     TeacherResponseDTO entityToResDto(Teacher teacher);
     @Mappings({
             @Mapping(source = "teacherSubjects.iD", target = "id"),
-            @Mapping(source = "teacherSubjects.idSubject", target = "teacherSubjectRequestDto"),
+            @Mapping(source = "teacherSubjects.idSubject", target = "teacherSubjectResponseDto"),
             @Mapping(source = "teacherSubjects.nameSubject", target = "teacherCourseResponseDto")
     })
     List<TeacherSubjectResponseDto> teacherSubjectListToDto(List<TeacherSubject> teacherSubjects);

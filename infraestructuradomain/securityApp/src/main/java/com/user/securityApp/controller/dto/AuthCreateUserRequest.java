@@ -1,5 +1,6 @@
 package com.user.securityApp.controller.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +16,9 @@ public record AuthCreateUserRequest(
 
         @NotBlank(message = "Password cannot be empty")
         String password,
+
         String email,
+
         String fullName,
         Date dateOfBirth,
         String phone,

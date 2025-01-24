@@ -73,7 +73,7 @@ public class TeacherServiceImpl implements TeacherService {
         Set<TeacherSubjectResponseDto> subjectResDto = restCommunication.fetchSubjectList(teacher.getListSubjectByTeacher());
         Set<TeacherCourseResponseDto> courseResDto = restCommunication.fetchCourseList(teacher.getTeacherCourseList());
 
-        resDTO.setTeacherSubjectRequestDto(resMapper.mapSubjects(subjectResDto));
+        resDTO.setTeacherSubjectResponseDto(resMapper.mapSubjects(subjectResDto));
         resDTO.setTeacherCourseResponseDto(resMapper.mapCourses(courseResDto));
         return resDTO;
     }

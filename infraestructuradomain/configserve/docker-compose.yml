@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  config-server:
+    image: config-server:latest
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - spring-cloud
+    environment:
+      - SPRING_PROFILES_ACTIVE=git
+      - SPRING_CLOUD_CONFIG_SERVER_GIT_URI=file:///config-repo
+    volumes:
+      - C:/springboot/bolivarianogestionapp/confing-server-repo:/config-repo # Verifica que la ruta sea correcta dentro del contenedor
+
+networks:
+  spring-cloud:
+    driver: bridge

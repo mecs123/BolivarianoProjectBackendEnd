@@ -5,13 +5,18 @@ package com.user.securityApp.service;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.user.securityApp.consts.MessageConstants;
 import com.user.securityApp.controller.dto.*;
+import com.user.securityApp.excepcion.ConflictException;
+import com.user.securityApp.excepcion.NotFoundUserException;
 import com.user.securityApp.persistence.entity.RoleEntity;
 import com.user.securityApp.persistence.entity.UserEntity;
 import com.user.securityApp.persistence.repository.PermisionRepository;
 import com.user.securityApp.persistence.repository.RoleRepository;
 import com.user.securityApp.persistence.repository.UserRepository;
 import com.user.securityApp.util.JwtUtils;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -123,13 +128,24 @@ public class UserDetailServiceImpl implements UserDetailsService {
         String message = null;
         String username = createRoleRequest.username();
         String password = createRoleRequest.password();
+        String email = createRoleRequest.email();
 
         // Verificar si el nombre de usuario ya existe en la base de datos
         Optional<UserEntity> existingUser = userRepository.findUserEntityByUsername(username);
         if (existingUser.isPresent()) {
             message = MessageConstants.USER_ALREADY_EXIST;// Mensaje de error para el nombre de usuario duplicado
-            throw new IllegalArgumentException(message); // Lanza un error con el mensaje
+            throw new ConflictException(username,message); // Lanza un error con el mensaje
         }
+
+        // Validar el correo directamente
+        Optional<UserEntity> existingEmail = userRepository.findByEmail(email);
+        if (existingEmail.isPresent()) {
+            message = MessageConstants.EMAIL_ALREADY_EXIST;
+            throw new ConflictException(email, message);
+        }
+
+
+
 
         // Verificar si los roles son requeridos
         if (createRoleRequest.roleRequest() == null) {
@@ -164,39 +180,47 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 .build();
 
         // Guardar el usuario en la base de datos
-        UserEntity userSaved = userRepository.save(userEntity);
+        try {
+            UserEntity userSaved = userRepository.save(userEntity);
+            // Asignar roles y permisos al usuario
+            ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
+            userSaved.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
+            userSaved.getRoles().stream().flatMap(role -> role.getPermissionList().stream())
+                    .forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getName())));
 
-        // Asignar roles y permisos al usuario
-        ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        userSaved.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
-        userSaved.getRoles().stream().flatMap(role -> role.getPermissionList().stream())
-                .forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getName())));
+            // Crear la autenticación
+            Authentication authentication = new UsernamePasswordAuthenticationToken(userSaved, null, authorities);
 
-        // Crear la autenticación
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userSaved, null, authorities);
+            // Crear el access token y refresh token
+            String accessToken = jwtUtils.createToken(authentication, username);
+            String refreshToken = jwtUtils.generateRefreshToken(username);
 
-        // Crear el access token y refresh token
-        String accessToken = jwtUtils.createToken(authentication, username);
-        String refreshToken = jwtUtils.generateRefreshToken(username);
+            // Crear el set de roles
+            Set<String> roleNames = userSaved.getRoles().stream()
+                    .map(role -> role.getRoleEnum().name().replace("ROLE_", "")) // Eliminar prefijo "ROLE_"
+                    .collect(Collectors.toSet());
 
-        // Crear el set de roles
-        Set<String> roleNames = userSaved.getRoles().stream()
-                .map(role -> role.getRoleEnum().name().replace("ROLE_", "")) // Eliminar prefijo "ROLE_"
-                .collect(Collectors.toSet());
+            // Establecer el mensaje de éxito
+            message = MessageConstants.USER_CREATED; // Usamos la constante para el mensaje de éxito
 
-        // Establecer el mensaje de éxito
-        message = MessageConstants.USER_CREATED; // Usamos la constante para el mensaje de éxito
+            // Crear y devolver la respuesta
+            AuthResponse authResponse = new AuthResponse(
+                    username,
+                    message,
+                    accessToken,
+                    refreshToken,
+                    roleNames,  // Pasar la lista de roles como String
+                    true
+            );
+            return authResponse;
 
-        // Crear y devolver la respuesta
-        AuthResponse authResponse = new AuthResponse(
-                username,
-                message,
-                accessToken,
-                refreshToken,
-                roleNames,  // Pasar la lista de roles como String
-                true
-        );
-        return authResponse;
+        } catch (DataIntegrityViolationException e) {
+            if (e.getCause() instanceof ConstraintViolationException) {
+                message = "El correo electrónico ya está registrado.";
+                throw new ConflictException("correo",message);
+            }
+            throw e;
+        }
     }
 
     public List<UserListResponse> listAllUsers() {
@@ -362,6 +386,25 @@ public class UserDetailServiceImpl implements UserDetailsService {
     }
 
 
+    public AuthEmailResponse obtainEmail(String email) {
+        AuthEmailResponse authEmailResponse = null;
+        Optional<UserEntity> existingEmail = userRepository.findByEmail(email);
 
+        if (existingEmail.isEmpty()) {
+            authEmailResponse = new AuthEmailResponse(MessageConstants.EMAIL_NOT_EXIST,email,null,null);
+            throw new NotFoundUserException(authEmailResponse.email(),authEmailResponse.mensaje());
+
+        }
+
+
+       authEmailResponse = new AuthEmailResponse(
+               "Puede proceder",
+               email,
+               existingEmail.get().getFullName(),
+               existingEmail.get().getUsername()
+       );
+
+        return authEmailResponse;
+    }
 
 }

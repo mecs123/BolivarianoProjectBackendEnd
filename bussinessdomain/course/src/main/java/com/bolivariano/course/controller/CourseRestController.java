@@ -5,6 +5,7 @@ import com.bolivariano.course.dto.response.CourseResponseDTO;
 import com.bolivariano.course.entities.Course;
 import com.bolivariano.course.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,18 +20,12 @@ public class CourseRestController {
     @Autowired
     private CourseService courseService;
 
+
     @GetMapping("/all")
-    public ResponseEntity<List<CourseResponseDTO>> listAllCourses(
-
-    ) {
-        List<Course> courses = courseService.findAllCourses();
-
-        List<CourseResponseDTO> response = courses.stream()
-                .map(CourseResponseDTO::fromEntity)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<CourseResponseDTO>> listAllCourses() {
+        return new ResponseEntity<>(this.courseService.findAllCourses(), HttpStatus.OK);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<CourseResponseDTO> getCourseById(

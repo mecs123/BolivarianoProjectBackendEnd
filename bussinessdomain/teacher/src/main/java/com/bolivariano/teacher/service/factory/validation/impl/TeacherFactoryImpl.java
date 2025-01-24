@@ -30,8 +30,10 @@ public class TeacherFactoryImpl implements TeacherFactory {
      */
     @Override
     public Teacher createTeacher(TeacherRequestDTO teacherRequestDTO) {
+        String codteacherWithIndexT = teacherRequestDTO.getCodTeacher();
+
         Teacher teacher = Teacher.builder()
-                .codTeacher(teacherRequestDTO.getCodTeacher())
+                .codTeacher("T"+codteacherWithIndexT)
                 .nameTeacher(teacherRequestDTO.getNameTeacher())
                 .estado(teacherRequestDTO.isEstado())
                 .build();

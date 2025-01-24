@@ -17,7 +17,7 @@ public interface TeacherSubjCourseResponseMapper {
 
     @Mappings({
             @Mapping(source = "codTeacher", target = "codTeacher"),
-            @Mapping(source = "listSubjectByTeacher", target = "teacherSubjectRequestDto"),
+            @Mapping(source = "listSubjectByTeacher", target = "teacherSubjectResponseDto"),
             @Mapping(source = "teacherCourseList", target = "teacherCourseResponseDto"),
             // Puedes añadir más mapeos si es necesario.
     })

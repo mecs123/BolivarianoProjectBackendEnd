@@ -18,7 +18,7 @@ public class TeacherResponseDTO {
     private String nameTeacher;
     private String codTeacher;
     private boolean estado;
-    private Set<TeacherSubjectResponseDto> teacherSubjectRequestDto;
+    private Set<TeacherSubjectResponseDto> teacherSubjectResponseDto;
     private Set<TeacherCourseResponseDto> teacherCourseResponseDto;
 
 }

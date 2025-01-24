@@ -1,6 +1,7 @@
 version: '3'
 services:
   ### Posgres database for Teacher
+  ### Posgres database for Teacher
   db-teacher:
     container_name: db-teacher
     image: postgres:15.2
@@ -10,10 +11,7 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: Test123
     ports:
-      - 5431:5431
-    expose:
-      - 5431
-    command: -p 5431
+      - 5431:5432
 
   ### MySQL database for Course
   db-course:
@@ -27,8 +25,6 @@ services:
       MYSQL_ROOT_PASSWORD: root
     ports:
       - 3307:3306
-    expose:
-      - 3306
 
   ### Posgres database for Subject
   db-subject:
@@ -41,12 +37,8 @@ services:
       POSTGRES_PASSWORD: Test123
     ports:
       - 5435:5432
-    expose:
-      - 5432
-    command: -p 5432
 
-
-##Adimin and security
+  ##Admin and security
   db-user:
     container_name: db-admin-user
     image: postgres:15.2
@@ -56,10 +48,18 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: Test123
     ports:
-      - 5450:5450  # Cambiar al puerto 5450 en lugar de 5440
-    expose:
-      - 5450
-    command: -p 5450
+      - 5450:5432
+
+  db-student:
+    image: mysql:8.0
+    container_name: student_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ms_student
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: Test123
+    ports:
+      - 3308:3306
 
   ### Adminer for database management
   adminer:
@@ -77,39 +77,3 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
-
-  keycloak:
-    container_name: keycloak
-    image: quay.io/keycloak/keycloak:21.0.2
-    command: [ "start-dev" ]
-    ports:
-      - 8181:8181
-    expose:
-      - 8181
-    depends_on:
-      - db-keycloak
-    environment:
-      DB_VENDOR: POSTGRES
-      DB_ADDR: db-keycloak
-      DB_DATABASE: db_keycloak
-      DB_PORT: 5433
-      DB_USER: manueldev
-      DB_PASSWORD: Test123
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HTTP_PORT: 8181
-
-  db-keycloak:
-    container_name: db-keycloak
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: db_keycloak
-      POSTGRES_USER: manueldev
-      POSTGRES_PASSWORD: Test123
-    ports:
-      - 5434:5432  # Changed external port to 5434
-    volumes:
-      - db-keycloak-data:/var/lib/postgresql/data
-
-volumes:
-  db-keycloak-data:
