@@ -33,6 +33,8 @@ public class JwtUtils {
 
     // Método para crear un JWT basado en la autenticación del usuario
     public String createToken(Authentication authentication, String username) {
+
+
         // Crear el algoritmo HMAC256 usando la clave privada para firmar el token
         Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
         Authentication getUserNameAuthenticaPrincipal = SecurityContextHolder.getContext().getAuthentication();

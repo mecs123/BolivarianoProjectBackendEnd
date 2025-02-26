@@ -1,42 +1,37 @@
 package com.bolivariano.student.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"codeStudent"})})
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-public class Student implements Serializable {
-
+@Table(name = "STUDENT_COURSE")
+public class StudentCourse implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L; // Versión para controlar cambios en la serialización.
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String codeStudent;
-    private String nameStudent;
-    private String emailStudent;
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
-    private boolean estadoStudent;
+    private long id;
+    @Column(name = "idCourse")
+    private long idCourse;
+    @Column(name = "nameCourse")
+    private String nameCourse;
 
-    private String courseCode;
-
-    private String courseName;
-
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = Student.class)
+    @JoinColumn(name = "student_id")
+    @JsonBackReference
     @ToString.Exclude
-    @JsonManagedReference
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<StudentCourse> studentCourses = new HashSet<>();
+    private Student student;
 
     @Override
     public final boolean equals(Object o) {
@@ -45,8 +40,8 @@ public class Student implements Serializable {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        Student student = (Student) o;
-        return getId() != null && Objects.equals(getId(), student.getId());
+        StudentCourse that = (StudentCourse) o;
+        return false;
     }
 
     @Override

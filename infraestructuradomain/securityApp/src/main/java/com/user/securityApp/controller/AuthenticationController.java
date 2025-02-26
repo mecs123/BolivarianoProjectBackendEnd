@@ -1,14 +1,15 @@
 package com.user.securityApp.controller;
 
 import com.user.securityApp.controller.dto.*;
+import com.user.securityApp.exception.SecurityErrorHandler;
 import com.user.securityApp.service.UserDetailServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.method.HandleAuthorizationDenied;
 import org.springframework.web.bind.annotation.*;
 
-import javax.management.relation.RoleNotFoundException;
 import java.util.List;
 
 
@@ -20,13 +21,23 @@ public class AuthenticationController {
     private UserDetailServiceImpl userDetailsService;
 
 
+    @PostMapping(value = "demo")
+    public String welcome()
+    {
+        return "Welcome from secure endpoint";
+    }
+
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid AuthCreateUserRequest userRequest) throws RoleNotFoundException {
+    @HandleAuthorizationDenied(handlerClass = SecurityErrorHandler.class)
+    public ResponseEntity<AuthResponse> register(@RequestBody @Valid AuthCreateUserRequest userRequest)  {
         return new ResponseEntity<>(this.userDetailsService.createUser(userRequest), HttpStatus.CREATED);
     }
 
+
     @PostMapping("/log-in")
+    @HandleAuthorizationDenied(handlerClass = SecurityErrorHandler.class)
     public ResponseEntity<AuthResponse> loging(@RequestBody @Valid AuhthLoginRequest userRequest){
+
         return  new ResponseEntity<>(this.userDetailsService.loginUser(userRequest), HttpStatus.OK);
     }
 

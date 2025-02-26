@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 @EnableDiscoveryClient
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.user.securityApp")
 public class SpringSeecurityAppApplication {
 
     public static void main(String[] args) {

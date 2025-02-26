@@ -1,4 +1,4 @@
-package com.user.securityApp.excepcion;
+package com.user.securityApp.exception;
 
 public class NotFoundUserException extends RuntimeException {
     private final String campo;

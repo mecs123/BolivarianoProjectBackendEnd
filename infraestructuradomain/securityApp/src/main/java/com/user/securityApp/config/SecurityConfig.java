@@ -3,6 +3,8 @@ package com.user.securityApp.config;
 import com.user.securityApp.config.filter.JwtTokenValidator;
 import com.user.securityApp.service.UserDetailServiceImpl;
 import com.user.securityApp.util.JwtUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +14,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,32 +21,40 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
-
+@Slf4j
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Autowired
     private JwtUtils jwtUtils;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        log.info("Configurando seguridad");
         return http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuración CORS en Spring Security
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 // Configurar autorización de rutas
                 .authorizeRequests(authorize -> {
                     // Endpoints públicos
+                    authorize.requestMatchers("/auth/**").permitAll();
                     authorize.requestMatchers(HttpMethod.DELETE,"/auth/delete").permitAll();
                     authorize.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll();
-
+                    authorize.requestMatchers(HttpMethod.POST,"/auth/sign-up").permitAll();
                     authorize.requestMatchers(HttpMethod.POST,"/auth").permitAll();
 
                     authorize.requestMatchers(
@@ -62,7 +71,8 @@ public class SecurityConfig {
                     ).permitAll();
                     authorize.requestMatchers(
                             new AntPathRequestMatcher("/swagger-ui/**"),
-                            new AntPathRequestMatcher("/v3/api-docs/**")
+                            new AntPathRequestMatcher("/v3/api-docs/**"),
+                    new AntPathRequestMatcher("/auth/sign-up")
                     ).permitAll();
 
                     authorize.requestMatchers(HttpMethod.POST, "/method/post").hasAnyRole("ADMIN", "DEVELOPER");
@@ -70,43 +80,29 @@ public class SecurityConfig {
 
                     authorize.requestMatchers(HttpMethod.PATCH, "/method/patch").hasAnyAuthority("REFACTOR");
 
-                    // Permitir solicitudes locales (para pruebas en localhost)
-                    authorize.requestMatchers(request -> {
-                        String remoteHost = request.getRemoteHost();
-                        return "localhost".equals(remoteHost) ||
-                                "127.0.0.1".equals(remoteHost) ||
-                                "0:0:0:0:0:0:0:1".equals(remoteHost);
-                    }).permitAll();
+
 
                     // Bloquear cualquier solicitud no configurada
                     authorize.anyRequest().denyAll();
                 })
 
-                // Configurar CORS para Angular
-                .cors(Customizer.withDefaults())
-
-                // Configurar CSRF con soporte para Angular
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers(
-                                new AntPathRequestMatcher("/swagger-ui/**"),
-                                new AntPathRequestMatcher("/v3/api-docs/**"),
-                                request -> {
-                                    String remoteHost = request.getRemoteHost();
-                                    return "localhost".equals(remoteHost) ||
-                                            "127.0.0.1".equals(remoteHost) ||
-                                            "0:0:0:0:0:0:0:1".equals(remoteHost);
-                                }
-                        )
-                )
-
-                // Configurar manejo de sesiones
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 // Agregar filtro de validación JWT
                 .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
 
                 .build();
+    }
+
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(
+                   CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("*");
+            }
+        };
     }
 
     @Bean
@@ -147,4 +143,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
+
 }

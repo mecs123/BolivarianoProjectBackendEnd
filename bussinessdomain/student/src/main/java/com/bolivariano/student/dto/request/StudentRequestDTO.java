@@ -1,24 +1,35 @@
 package com.bolivariano.student.dto.request;
 
 import com.bolivariano.student.entities.Student;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
+
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class StudentRequestDTO {
+
+    @NotBlank
     private String nameStudent;  // Nombre del estudiante
     private String codeStudent;  // Código del estudiante (nuevo campo)
-    private Long courseId;  // Id del curso asociado al estudiante
+    private String email;  // Correo del estudiante
+    @NotNull
+    private boolean estado;  // Estado del estudiante
+    private String courseName;  // Nombre del curso asociado al estudiante
+    @NotBlank
+    private String courseCode;  // Código del curso asociado al estudiante
 
-    // Método de conversión a entidad Student
     public Student toEntity() {
-        Student student = new Student();
-        student.setNameStudent(this.nameStudent);
-        student.setCodeStudent(this.codeStudent);  // Asignando el código del estudiante
-        // Si se requiere asociar el curso, puedes agregar la lógica aquí para encontrar el curso por ID
-        return student;
+        return Student.builder()
+                .nameStudent(nameStudent)
+                .codeStudent(codeStudent)
+                .emailStudent(email)
+                .estadoStudent(estado)
+                .courseName(courseName)
+                .courseCode(courseCode)
+                .build();
     }
 }
