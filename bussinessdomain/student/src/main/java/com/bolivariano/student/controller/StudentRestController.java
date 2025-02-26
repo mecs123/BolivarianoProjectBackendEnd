@@ -76,7 +76,7 @@ public class StudentRestController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(
-            @PathVariable Long id
+            @PathVariable("id") Long id
     ) {
         if (studentService.deleteStudentById(id)) {
             return ResponseEntity.ok().build();
